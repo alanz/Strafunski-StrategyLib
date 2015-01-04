@@ -25,6 +25,13 @@ newtype Id a = Id a
 unId 		:: Id a -> a
 unId (Id x) 	 = x
 
+instance Functor Id where
+  fmap f (Id a) = Id (f a)
+
+instance Applicative Id where
+  pure = return
+  (<*>) = ap
+
 instance Monad Id where
  return = Id
  (Id x) >>= f = f x

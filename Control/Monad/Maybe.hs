@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 ------------------------------------------------------------------------------
 -- | 
 -- Maintainer	: Ralf Laemmel, Joost Visser
@@ -23,12 +24,17 @@ import Control.Monad.State
 import Control.Monad.RWS
 import Control.Monad.Cont
 import Control.Monad.Error
+import Control.Applicative
 
 ------------------------------------------------------------------------------
 
 -- | The monad transformer 'MaybeT'.
 newtype MaybeT m a = MaybeT { runMaybeT :: m (Maybe a) }
 
+instance (Functor m, Monad m) => Applicative (MaybeT m) where
+    pure = return
+    (<*>) = ap
+ 
 instance (Monad m) => Functor (MaybeT m) where
 	fmap f m = MaybeT $ do
 		a <- runMaybeT m
@@ -44,6 +50,10 @@ instance (Monad m) => Monad (MaybeT m) where
 			Nothing -> return (Nothing)
 			Just  r -> runMaybeT (k r)
 	fail msg = MaybeT $ return (Nothing)
+
+instance (Functor m, Monad m) => Alternative (MaybeT m) where
+    empty = mzero
+    (<|>) = mplus
 
 instance (Monad m) => MonadPlus (MaybeT m) where
 	mzero       = MaybeT $ return (Nothing)
